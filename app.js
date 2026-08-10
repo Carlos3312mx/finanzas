@@ -71,7 +71,11 @@ const dom = {
     btnAskAi: document.getElementById("btn-ask-ai"),
     aiLoaderContainer: document.getElementById("ai-loader-container"),
     aiResponseWrapper: document.getElementById("ai-response-wrapper"),
-    aiChips: document.querySelectorAll(".ai-chip")
+    aiChips: document.querySelectorAll(".ai-chip"),
+    gdClientId: document.getElementById("gd-client-id"),
+    btnSaveGdClient: document.getElementById("btn-save-gd-client"),
+    btnSyncGd: document.getElementById("btn-sync-gd"),
+    gdSyncStatus: document.getElementById("gd-sync-status")
 };
 
 // MAPA DE MONEDAS
