@@ -99,6 +99,7 @@ const StorageManager = {
     },
 
     saveData: function(data) {
+        data.last_updated = Date.now();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         return true;
     },

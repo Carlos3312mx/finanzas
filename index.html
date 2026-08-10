@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Identity Services (OAuth2) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- PWA Manifest & iOS Support -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -448,6 +450,44 @@
                             </div>
                         </div>
                         
+                        <!-- Sincronización en la Nube con Google Drive -->
+                        <div class="separator-light" style="margin: 10px 0;"></div>
+                        
+                        <div class="action-block" style="width: 100%; border: 1px solid rgba(0, 176, 80, 0.2); background-color: rgba(0, 176, 80, 0.01);">
+                            <h3>☁️ Sincronización con Google Drive</h3>
+                            <p>Usa tu cuenta de Google Drive para mantener tus datos sincronizados de forma automática entre tu computadora y tu iPhone.</p>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+                                <div class="form-row" style="align-items: flex-end;">
+                                    <div class="form-group">
+                                        <label for="gd-client-id">Google Client ID</label>
+                                        <input type="text" id="gd-client-id" placeholder="Ingresa tu Client ID de Google Cloud..." style="font-size: 0.8rem;">
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn btn-primary" id="btn-save-gd-client" style="height: 38px;">Guardar ID</button>
+                                        <button class="btn btn-secondary" id="btn-sync-gd" style="height: 38px; gap: 6px;">
+                                            <span>🟢 Conectar y Sincronizar</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="input-help" id="gd-sync-status" style="color: var(--text-muted);">
+                                    Estado: No conectado. Configura tu Client ID para habilitar la sincronización.
+                                </p>
+                                <details style="font-size: 0.75rem; color: var(--text-muted); cursor: pointer;">
+                                    <summary>¿Cómo obtener tu Google Client ID gratis? (Paso a Paso)</summary>
+                                    <ol style="margin-left: 18px; margin-top: 6px; display: flex; flex-direction: column; gap: 4px; line-height: 1.4;">
+                                        <li>Ve a <a href="https://console.cloud.google.com/" target="_blank" style="color: var(--color-primary-hover);">Google Cloud Console</a> e inicia sesión.</li>
+                                        <li>Crea un proyecto nuevo (ej. "Mi Planificador").</li>
+                                        <li>Ve a <strong>API y Servicios</strong> -> <strong>Pantalla de consentimiento de OAuth</strong>. Configúrala como "Externo", ingresa el nombre de la app, tu correo y agrega el alcance <code>.../auth/drive.file</code> (permite crear y editar sus propios archivos de Drive).</li>
+                                        <li>Ve a <strong>Credenciales</strong> -> <strong>Crear credenciales</strong> -> <strong>ID de cliente de OAuth</strong>.</li>
+                                        <li>Selecciona tipo de aplicación: <strong>Aplicación web</strong>.</li>
+                                        <li>En <strong>Orígenes de JavaScript autorizados</strong>, agrega tu dirección de GitHub Pages: <code>https://carlos3312mx.github.io</code>.</li>
+                                        <li>Copia el "ID de cliente" generado y pégalo arriba. ¡Listo!</li>
+                                    </ol>
+                                </details>
+                            </div>
+                        </div>
+
                         <div class="danger-zone">
                             <h3>⚠️ Zona de Peligro</h3>
                             <p>Elimina todos los datos actuales y restablece el dashboard con los valores por defecto.</p>

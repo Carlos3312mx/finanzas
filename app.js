@@ -3,6 +3,8 @@ let appData = StorageManager.loadData();
 let targetDateVal = "";
 let categoryChart = null;
 let flowComparisonChart = null;
+let googleTokenClient = null;
+let googleAccessToken = null;
 
 // ELEMENTOS DEL DOM
 const dom = {
@@ -133,6 +135,14 @@ function init() {
     // Inicializar Clave API de OpenAI
     const savedApiKey = localStorage.getItem("openai_api_key") || "";
     dom.aiApiKey.value = savedApiKey;
+
+    // Inicializar Google Client ID
+    const savedGdClientId = localStorage.getItem("google_client_id") || "";
+    dom.gdClientId.value = savedGdClientId;
+    if (savedGdClientId) {
+        dom.gdSyncStatus.textContent = "Estado: Guardado. Listo para conectar.";
+        setTimeout(initGoogleAuth, 1000);
+    }
 
     // Eventos
     registerEventListeners();
@@ -304,6 +314,20 @@ function registerEventListeners() {
             dom.aiQuery.value = this.dataset.query;
             dom.aiQuery.focus();
         });
+    });
+
+    // 15. Guardar Google Client ID
+    dom.btnSaveGdClient.addEventListener("click", function() {
+        const val = dom.gdClientId.value.trim();
+        localStorage.setItem("google_client_id", val);
+        alert("Google Client ID guardado con éxito.");
+        dom.gdSyncStatus.textContent = val ? "Estado: Guardado. Listo para conectar." : "Estado: No conectado. Configura tu Client ID.";
+        initGoogleAuth();
+    });
+
+    // 16. Sincronizar con Google Drive
+    dom.btnSyncGd.addEventListener("click", function() {
+        syncWithGoogleDrive();
     });
 }
 
@@ -1104,6 +1128,206 @@ function parseAiMarkdown(text) {
     html = html.replace(/(<\/h[1-3]>|<br>)\s*<br>/g, '$1');
     
     return `<div class="ai-response-content">${html}</div>`;
+}
+
+// ---------------- SINCRONIZACIÓN CON GOOGLE DRIVE (API v3) ----------------
+
+// Inicializar Google Identity Services Client
+function initGoogleAuth() {
+    const clientId = localStorage.getItem("google_client_id");
+    if (!clientId) {
+        console.log("Sincronización de Drive omitida: No se ha configurado Google Client ID.");
+        return;
+    }
+    if (!window.google) {
+        console.warn("SDK de Google Accounts no disponible.");
+        dom.gdSyncStatus.textContent = "Error: SDK de Google no cargó.";
+        return;
+    }
+    
+    try {
+        googleTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: "https://www.googleapis.com/auth/drive.file",
+            callback: async (tokenResponse) => {
+                if (tokenResponse.error !== undefined) {
+                    console.error("Google Auth Error:", tokenResponse.error);
+                    dom.gdSyncStatus.textContent = `Error: ${tokenResponse.error_description || "Fallo en autenticación"}`;
+                    return;
+                }
+                googleAccessToken = tokenResponse.access_token;
+                dom.gdSyncStatus.textContent = "Conectado. Sincronizando datos...";
+                await performDriveSync();
+            }
+        });
+        console.log("Google OAuth client inicializado correctamente.");
+    } catch (err) {
+        console.error("Fallo al inicializar Google Token Client:", err);
+        dom.gdSyncStatus.textContent = `Error de Inicialización: ${err.message}`;
+    }
+}
+
+// Iniciar proceso de sincronización
+function syncWithGoogleDrive() {
+    const clientId = localStorage.getItem("google_client_id");
+    if (!clientId) {
+        alert("Por favor, ingresa tu Client ID de Google Cloud y guárdalo primero.");
+        dom.gdClientId.focus();
+        return;
+    }
+    
+    // Si no está inicializado, intentar hacerlo
+    if (!googleTokenClient) {
+        initGoogleAuth();
+    }
+    
+    if (!googleTokenClient) {
+        alert("No se pudo iniciar el cliente de Google. Revisa tu Client ID.");
+        return;
+    }
+    
+    dom.gdSyncStatus.textContent = "Solicitando autorización de Google...";
+    
+    // Si ya tenemos token, sincronizar directamente. Si no, pedir token.
+    if (googleAccessToken) {
+        dom.gdSyncStatus.textContent = "Conectado. Sincronizando...";
+        performDriveSync();
+    } else {
+        googleTokenClient.requestAccessToken({ prompt: 'consent' });
+    }
+}
+
+// Ejecutar sincronización (Búsqueda, Descarga, Comparación y Carga)
+async function performDriveSync() {
+    if (!googleAccessToken) return;
+    
+    const fileName = "planificador_financiero_datos.json";
+    
+    try {
+        // 1. Buscar si el archivo ya existe en Drive
+        const query = encodeURIComponent(`name='${fileName}' and trashed=false`);
+        const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)`;
+        
+        const searchResponse = await fetch(searchUrl, {
+            headers: { "Authorization": `Bearer ${googleAccessToken}` }
+        });
+        
+        if (!searchResponse.ok) {
+            throw new Error(`Error al buscar archivo en Drive: ${searchResponse.statusText}`);
+        }
+        
+        const searchResult = await searchResponse.json();
+        const file = searchResult.files && searchResult.files[0];
+        
+        if (file) {
+            // EL ARCHIVO EXISTE EN DRIVE
+            const fileId = file.id;
+            console.log("Archivo encontrado en Google Drive con ID:", fileId);
+            
+            // 2. Descargar los datos desde Drive
+            const downloadUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+            const downloadResponse = await fetch(downloadUrl, {
+                headers: { "Authorization": `Bearer ${googleAccessToken}` }
+            });
+            
+            if (!downloadResponse.ok) {
+                throw new Error(`Error al descargar archivo desde Drive: ${downloadResponse.statusText}`);
+            }
+            
+            const driveData = await downloadResponse.json();
+            
+            // 3. Comparar marcas de tiempo
+            const localLastUpdated = appData.last_updated || 0;
+            const driveLastUpdated = driveData.last_updated || 0;
+            
+            console.log(`Última actualización - Local: ${localLastUpdated} | Drive: ${driveLastUpdated}`);
+            
+            if (driveLastUpdated > localLastUpdated) {
+                // LOS DATOS DE DRIVE SON MÁS NUEVOS: Sobrescribir datos locales
+                if (confirm(`Los datos en Google Drive son más recientes (${new Date(driveLastUpdated).toLocaleString()}) que tus datos locales (${new Date(localLastUpdated).toLocaleString()}).\n\n¿Deseas descargar los datos de la nube y sobrescribir los datos actuales en este navegador?`)) {
+                    StorageManager.saveData(driveData);
+                    appData = StorageManager.loadData();
+                    updateUI();
+                    dom.gdSyncStatus.textContent = `Sincronizado: Datos descargados de Drive (${new Date().toLocaleTimeString()})`;
+                    alert("Datos de la nube descargados e integrados correctamente.");
+                } else {
+                    // Si el usuario rechaza, subimos la local a Drive para forzar consistencia
+                    dom.gdSyncStatus.textContent = "Subiendo versión local a Drive...";
+                    await uploadFileToDrive(fileId);
+                }
+            } else if (localLastUpdated > driveLastUpdated) {
+                // LOS DATOS LOCALES SON MÁS NUEVOS: Sobrescribir datos en Drive
+                console.log("Los datos locales son más recientes. Subiendo a Google Drive...");
+                await uploadFileToDrive(fileId);
+            } else {
+                // YA ESTÁN EN SINCRONÍA
+                dom.gdSyncStatus.textContent = `Sincronizado: Al día (${new Date().toLocaleTimeString()})`;
+                console.log("La versión local y de la nube están al día.");
+            }
+        } else {
+            // EL ARCHIVO NO EXISTE EN DRIVE: Crear uno nuevo
+            console.log("El archivo no existe en Google Drive. Creando nuevo archivo...");
+            await createFileInDrive();
+        }
+    } catch (err) {
+        console.error("Fallo en sincronización de Drive:", err);
+        dom.gdSyncStatus.textContent = `Error de sincronización: ${err.message}`;
+    }
+}
+
+// Función auxiliar para subir (PATCH/Actualizar) archivo existente a Drive
+async function uploadFileToDrive(fileId) {
+    const uploadUrl = `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`;
+    
+    // Asegurar que el objeto local tenga timestamp actualizado
+    appData.last_updated = Date.now();
+    StorageManager.saveData(appData); // Sincroniza en localStorage local
+    
+    const response = await fetch(uploadUrl, {
+        method: "PATCH",
+        headers: {
+            "Authorization": `Bearer ${googleAccessToken}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(appData)
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Fallo al actualizar archivo en Drive: ${response.statusText}`);
+    }
+    
+    dom.gdSyncStatus.textContent = `Sincronizado: Subido a Drive (${new Date().toLocaleTimeString()})`;
+    console.log("Archivo actualizado en Google Drive con éxito.");
+}
+
+// Función auxiliar para crear (POST) archivo por primera vez en Drive
+async function createFileInDrive() {
+    const metadata = {
+        name: "planificador_financiero_datos.json",
+        mimeType: "application/json"
+    };
+    
+    appData.last_updated = Date.now();
+    StorageManager.saveData(appData);
+    
+    const form = new FormData();
+    form.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+    form.append("file", new Blob([JSON.stringify(appData)], { type: "application/json" }));
+    
+    const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${googleAccessToken}`
+        },
+        body: form
+    });
+    
+    if (!response.ok) {
+        throw new Error(`Fallo al crear archivo en Drive: ${response.statusText}`);
+    }
+    
+    dom.gdSyncStatus.textContent = `Sincronizado: Archivo creado en Drive (${new Date().toLocaleTimeString()})`;
+    console.log("Archivo creado en Google Drive con éxito.");
 }
 
 // ---------------- ACTUALIZACIÓN INTEGRAL DE LA UI ----------------
