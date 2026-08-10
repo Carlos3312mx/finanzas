@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Planificador y Calculadora Financiera Personal. Proyecta tu saldo a cualquier fecha y calcula tu ahorro semanal.">
+    <title>Planificador Financiero Personal</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- PWA Manifest & iOS Support -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Finanzas">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- BARRA LATERAL (CONFIGURACIÓN BÁSICA) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">💰</div>
+                <h2>Configuración</h2>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>Saldo Inicial</h3>
+                <div class="input-group">
+                    <label for="initial-balance-input">Mi Saldo Actual</label>
+                    <div class="currency-input-wrapper">
+                        <span class="currency-prefix" id="curr-symbol-prefix">$</span>
+                        <input type="number" id="initial-balance-input" value="5000" min="0" step="100">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="currency-select">Moneda</label>
+                    <select id="currency-select">
+                        <option value="USD" selected>USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="MXN">MXN ($)</option>
+                        <option value="CLP">CLP ($)</option>
+                        <option value="ARS">ARS ($)</option>
+                        <option value="COP">COP ($)</option>
+                        <option value="PEN">PEN (S/)</option>
+                        <option value="BRL">BRL (R$)</option>
+                    </select>
+                </div>
+
+                <div class="input-group" style="margin-top: 4px;">
+                    <label>Aspecto</label>
+                    <button class="btn btn-secondary" id="btn-toggle-theme" style="width: 100%; justify-content: center;">
+                        ☀️ Modo Claro
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3>Resumen Rápido</h3>
+                <div class="sidebar-kpi-box">
+                    <div class="sidebar-kpi-label">Gastos Fijos Mensuales</div>
+                    <div class="sidebar-kpi-val" id="sb-fixed-expenses">$0.00</div>
+                </div>
+                <div class="sidebar-kpi-box">
+                    <div class="sidebar-kpi-label">Ahorro Semanal Requerido</div>
+                    <div class="sidebar-kpi-val highlight" id="sb-weekly-saving">$0.00</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="title-container">
+                    <h1>Planificador Financiero Personal</h1>
+                    <p class="subtitle">Calcula cuánto dinero tendrás en una fecha y organiza tu ahorro semanal.</p>
+                </div>
+                <div class="date-badge">
+                    Hoy: <span id="current-date-span">01/01/2026</span>
+                </div>
+            </header>
+
+            <!-- TABS DE NAVEGACION -->
+            <nav class="tab-nav">
+                <button class="tab-btn active" data-tab="tab-calculator">🔍 ¿Cuánto tendré en X fecha?</button>
+                <button class="tab-btn" data-tab="tab-weekly-saving">📅 Plan de Ahorro Semanal</button>
+                <button class="tab-btn" data-tab="tab-monthly-grid">🗓️ Vista por Meses</button>
+                <button class="tab-btn" data-tab="tab-analytics">📊 Distribución de Gastos</button>
+                <button class="tab-btn" data-tab="tab-transactions">💸 Mis Transacciones</button>
+                <button class="tab-btn" data-tab="tab-ai-advisor">🤖 Asistente IA</button>
+                <button class="tab-btn" data-tab="tab-backup">📥 Respaldo</button>
+            </nav>
+
+            <!-- CONTENIDO DE TABS -->
+            <div class="tab-content-container">
+                
+                <!-- TAB: CALCULADORA DE FECHA META -->
+                <div class="tab-panel active" id="tab-calculator">
+                    <div class="split-layout">
+                        <!-- Panel de Selección -->
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <div class="card form-card">
+                                <h2>¿Qué fecha deseas consultar?</h2>
+                                <p class="card-intro">Selecciona una fecha en el futuro para calcular tu saldo estimado.</p>
+                                
+                                <div class="standard-form" style="margin-top: 16px;">
+                                    <div class="form-group">
+                                        <label for="calc-target-date">Fecha Objetivo</label>
+                                        <input type="date" id="calc-target-date" required>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <button class="preset-date-btn btn btn-secondary btn-sm" data-days="30">En 30 días</button>
+                                        <button class="preset-date-btn btn btn-secondary btn-sm" data-days="90">En 90 días</button>
+                                        <button class="preset-date-btn btn btn-secondary btn-sm" data-days="180">En 6 meses</button>
+                                        <button class="preset-date-btn btn btn-secondary btn-sm" data-days="365">En 1 año</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Registrar Transacción -->
+                            <div class="card form-card">
+                                <h2>➕ Nueva Transacción</h2>
+                                <form id="transaction-form" class="standard-form">
+                                    <div class="form-group">
+                                        <label for="tx-name">Descripción</label>
+                                        <input type="text" id="tx-name" required placeholder="Ej. Sueldo, Alquiler, Luz, Comidas">
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="tx-amount">Monto</label>
+                                            <input type="number" id="tx-amount" min="0.01" step="0.01" required placeholder="0.00">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tx-type">Tipo</label>
+                                            <select id="tx-type">
+                                                <option value="income">🟢 Ingreso</option>
+                                                <option value="expense" selected>🔴 Gasto (Egreso)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="tx-frequency">Frecuencia</label>
+                                            <select id="tx-frequency">
+                                                <option value="one-time">Única (Un solo día)</option>
+                                                <option value="daily">Diaria</option>
+                                                <option value="weekly">Semanal</option>
+                                                <option value="bi-weekly">Quincenal</option>
+                                                <option value="monthly" selected>Mensual (Gasto Fijo)</option>
+                                                <option value="yearly">Anual</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tx-category">Categoría</label>
+                                            <select id="tx-category">
+                                                <option value="Trabajo">Trabajo</option>
+                                                <option value="Vivienda">Vivienda</option>
+                                                <option value="Servicios">Servicios</option>
+                                                <option value="Comida">Comida</option>
+                                                <option value="Transporte">Transporte</option>
+                                                <option value="Salud">Salud</option>
+                                                <option value="Educación">Educación</option>
+                                                <option value="Entretenimiento">Entretenimiento</option>
+                                                <option value="Suscripciones">Suscripciones</option>
+                                                <option value="Ahorros">Ahorros</option>
+                                                <option value="Otros" selected>Otros</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="tx-start-date">Fecha Inicio</label>
+                                            <input type="date" id="tx-start-date" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tx-end-date">Fecha Fin (Opcional)</label>
+                                            <input type="date" id="tx-end-date">
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary" id="btn-save-tx">Guardar Transacción</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Panel de Resultados -->
+                        <div class="card result-card" id="calc-result-panel">
+                            <h2>Saldo Estimado en la Fecha</h2>
+                            <div class="calc-result-box">
+                                <div class="calc-result-date" id="calc-result-date-text">Selecciona una fecha...</div>
+                                <div class="calc-result-value" id="calc-result-value-text">$0.00</div>
+                                <div class="calc-result-diff" id="calc-result-diff-text">Diferencia: --</div>
+                            </div>
+
+                            <div class="separator-light"></div>
+                            
+                            <h3>Desglose de Movimientos hasta la Fecha</h3>
+                            <div class="calc-breakdown-list" id="calc-breakdown-list">
+                                <!-- Rellenado dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: PLAN DE AHORRO SEMANAL -->
+                <div class="tab-panel" id="tab-weekly-saving">
+                    <div class="split-layout">
+                        <!-- Gastos Fijos Detectados -->
+                        <div class="card list-card">
+                            <h2>Gastos Fijos Mensuales Detectados</h2>
+                            <p class="card-intro">Estos son tus egresos que se repiten mes a mes.</p>
+                            
+                            <div class="table-container" style="margin-top: 16px;">
+                                <table class="data-table" id="fixed-expenses-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Gasto Fijo</th>
+                                            <th>Monto Mensual</th>
+                                            <th>Categoría</th>
+                                            <th>Día de Pago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="fixed-expenses-body">
+                                        <!-- Rellenado dinámicamente -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style="font-weight: 700; background: rgba(255,255,255,0.02);">
+                                            <td>Total Gastos Fijos</td>
+                                            <td id="total-fixed-expenses-val">$0.00</td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Calculadora de Reserva Semanal -->
+                        <div class="card result-card">
+                            <h2>Tu Plan de Reserva Semanal</h2>
+                            <p class="card-intro">Divide tus gastos mensuales en 4 partes semanales para que nunca te falte saldo al llegar fin de mes.</p>
+                            
+                            <div class="weekly-calc-box">
+                                <div class="weekly-val-title">Debes separar cada semana:</div>
+                                <div class="weekly-val-number" id="weekly-saving-number">$0.00</div>
+                                <div class="weekly-val-detail">Para cubrir un total de <span id="weekly-saving-total-needed">$0.00</span> mensuales.</div>
+                            </div>
+
+                            <div class="separator-light"></div>
+
+                            <h3>Tus Ahorros Semanales Realizados (Mes en Curso)</h3>
+                            <p class="input-help" style="margin-bottom: 12px;">Marca las semanas en las que ya has apartado tu cuota de ahorro:</p>
+                            
+                            <div class="weekly-checklist">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="weekly-chk" data-week="1"> Semanal 1 (Semana 1 del mes)
+                                    <span class="chk-status" id="chk-val-1">$0.00</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="weekly-chk" data-week="2"> Semanal 2 (Semana 2 del mes)
+                                    <span class="chk-status" id="chk-val-2">$0.00</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="weekly-chk" data-week="3"> Semanal 3 (Semana 3 del mes)
+                                    <span class="chk-status" id="chk-val-3">$0.00</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" class="weekly-chk" data-week="4"> Semanal 4 (Semana 4 del mes)
+                                    <span class="chk-status" id="chk-val-4">$0.00</span>
+                                </label>
+                            </div>
+                            
+                            <div class="weekly-progress-container" style="margin-top: 16px;">
+                                <div class="goal-progress-numbers">
+                                    <span>Progreso de Reserva</span>
+                                    <span id="weekly-progress-percent">0%</span>
+                                </div>
+                                <div class="goal-progress-bar-container">
+                                    <div class="goal-progress-fill" id="weekly-progress-fill" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: VISTA POR MESES -->
+                <div class="tab-panel" id="tab-monthly-grid">
+                    <div class="card accordion-card">
+                        <div class="card-header">
+                            <h2>Flujo Mensual Detallado</h2>
+                            <p class="card-intro">Proyección separada por meses. Haz clic en cualquier mes para ver el saldo inicial, saldo final, e ingresos y gastos programados.</p>
+                        </div>
+                        
+                        <div class="accordion-container" id="monthly-accordion-wrapper">
+                            <!-- Rellenado dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: DISTRIBUCIÓN DE GASTOS (ANALYTICS) -->
+                <div class="tab-panel" id="tab-analytics">
+                    <div class="split-layout">
+                        <!-- Gráfico de Distribución de Categorías -->
+                        <div class="card chart-card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                                <h2 style="margin: 0;">Distribución de Gastos</h2>
+                                <select id="analytics-month-select" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin: 0;"></select>
+                            </div>
+                            <p class="card-intro">Visualiza en qué categorías se concentran tus egresos en el mes seleccionado.</p>
+                            <div class="chart-wrapper" style="height: 320px; display: flex; justify-content: center; align-items: center; margin-top: 20px;">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Resumen y Comparación de Flujos -->
+                        <div class="card list-card">
+                            <h2 id="analytics-summary-title">Resumen de Flujos (Este mes)</h2>
+                            <div class="chart-wrapper" style="height: 160px; display: flex; justify-content: center; align-items: center; margin-top: 10px; margin-bottom: 20px;">
+                                <canvas id="flowComparisonChart"></canvas>
+                            </div>
+                            
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoría</th>
+                                            <th>Monto Mensual</th>
+                                            <th>Porcentaje de Gastos</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="analytics-table-body">
+                                        <!-- Rellenado dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: MIS TRANSACCIONES -->
+                <div class="tab-panel" id="tab-transactions">
+                    <div class="card list-card" style="width: 100%;">
+                        <h2>📋 Transacciones Registradas</h2>
+                        <div class="table-container">
+                            <table class="data-table" id="tx-list-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Monto</th>
+                                        <th>Frecuencia</th>
+                                        <th>Rango</th>
+                                        <th>Categoría</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tx-list-table-body">
+                                    <!-- Rellenado dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: ASISTENTE DE IA (CHAT CON GPT) -->
+                <div class="tab-panel" id="tab-ai-advisor">
+                    <div class="split-layout">
+                        <!-- Configuración Clave API -->
+                        <div class="card form-card">
+                            <h2>⚙️ Configuración del Asistente</h2>
+                            <p class="card-intro">Para habilitar el asistente de IA, ingresa tu clave API de OpenAI. Se guarda localmente y de forma segura en tu navegador.</p>
+                            
+                            <div class="standard-form" style="margin-top: 16px;">
+                                <div class="form-group">
+                                    <label for="ai-apikey">OpenAI API Key</label>
+                                    <input type="password" id="ai-apikey" placeholder="sk-proj-..." required>
+                                </div>
+                                <button class="btn btn-primary" id="btn-save-key" style="justify-content: center;">💾 Guardar Clave</button>
+                                <p class="input-help" style="margin-top: 4px; color: var(--color-success); display: none;" id="key-saved-indicator">✓ Clave guardada correctamente.</p>
+                            </div>
+                        </div>
+
+                        <!-- Consultas de IA -->
+                        <div class="card list-card">
+                            <h2>💬 Pregunta a tu Asesor Financiero</h2>
+                            <p class="card-intro">La IA analizará tu saldo actual, gastos recurrentes y proyecciones para aconsejarte sobre decisiones de compra.</p>
+                            
+                            <div class="ai-query-container">
+                                <div class="form-group">
+                                    <label for="ai-query">¿Qué deseas consultar?</label>
+                                    <textarea id="ai-query" rows="3" style="width: 100%; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; background-color: rgba(255,255,255,0.03); color: var(--text-main); font-family: var(--font-stack); font-size: 0.9rem; resize: none;" placeholder="Ej: ¿Puedo permitirme comprar una bicicleta de $350 este mes? o ¿Qué recomendaciones me das para ahorrar más?"></textarea>
+                                </div>
+                                
+                                <div>
+                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">Sugerencias rápidas:</span>
+                                    <div class="ai-suggestions">
+                                        <span class="ai-chip" data-query="¿Puedo permitirme comprar algo de $300 el próximo mes?">¿Permitirme gasto de $300?</span>
+                                        <span class="ai-chip" data-query="Analiza mi presupuesto actual y dame 3 consejos para mejorar mi ahorro semanal.">Consejos de Ahorro</span>
+                                        <span class="ai-chip" data-query="¿Cómo se proyecta mi balance financiero para final de año en base a mis transacciones?">Proyección de Cierre</span>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-primary" id="btn-ask-ai" style="margin-top: 10px; justify-content: center; gap: 8px;">
+                                    <span>🤖 Preguntar al Asesor</span>
+                                </button>
+                            </div>
+
+                            <!-- Indicador de Carga -->
+                            <div class="ai-loader" id="ai-loader-container">
+                                <div class="ai-spinner"></div>
+                                <div class="ai-pulse-text">Analizando tu historial de flujo y proyecciones...</div>
+                            </div>
+
+                            <!-- Área de Respuestas -->
+                            <div class="ai-response-box empty" id="ai-response-wrapper">
+                                <span>Las respuestas de la IA aparecerán aquí una vez realices tu pregunta.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: RESPALDO -->
+                <div class="tab-panel" id="tab-backup">
+                    <div class="card backup-card">
+                        <h2>📥 Exportar e Importar Datos</h2>
+                        <p class="card-intro">Tus datos se guardan en el navegador. Utiliza estas herramientas para respaldar tu información en un archivo local o cargar datos anteriores.</p>
+                        
+                        <div class="backup-actions">
+                            <div class="action-block">
+                                <h3>Guardar Copia de Seguridad</h3>
+                                <p>Descarga un archivo JSON con tu balance y transacciones financieras.</p>
+                                <button class="btn btn-secondary" id="btn-export-backup">Descargar Respaldo (.json)</button>
+                            </div>
+                            
+                            <div class="action-block">
+                                <h3>Cargar Copia de Seguridad</h3>
+                                <p>Sube un archivo de respaldo previamente descargado para restaurar tu información.</p>
+                                <div class="file-upload-wrapper">
+                                    <input type="file" id="import-file-input" accept=".json">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="danger-zone">
+                            <h3>⚠️ Zona de Peligro</h3>
+                            <p>Elimina todos los datos actuales y restablece el dashboard con los valores por defecto.</p>
+                            <button class="btn btn-danger" id="btn-reset-data">Restablecer Todo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="storage.js"></script>
+    <script src="engine.js"></script>
+    <script src="app.js"></script>
+    <!-- Registro de Service Worker para PWA -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                navigator.serviceWorker.register("sw.js")
+                    .then(reg => console.log("Service Worker registrado con éxito:", reg.scope))
+                    .catch(err => console.log("Fallo al registrar el Service Worker:", err));
+            });
+        }
+    </script>
+</body>
+</html>
