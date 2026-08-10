@@ -74,6 +74,10 @@ body {
 .app-container {
     display: flex;
     min-height: 100vh;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* BARRA LATERAL (SIDEBAR) */
@@ -808,7 +812,20 @@ select:focus {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
-        gap: 20px;
+        gap: 16px;
+        padding: 16px 20px;
+    }
+    
+    .sidebar.collapsed {
+        gap: 0;
+    }
+    
+    .sidebar.collapsed .sidebar-section {
+        display: none !important;
+    }
+    
+    #btn-toggle-sidebar-content {
+        display: block !important;
     }
     
     .split-layout {
@@ -821,14 +838,56 @@ select:focus {
     }
 }
 
+@media (max-width: 768px) {
+    .tab-nav {
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 6px;
+        gap: 4px;
+        margin-bottom: 12px;
+    }
+    
+    .tab-btn {
+        flex-shrink: 0;
+        padding: 10px 14px;
+        font-size: 0.85rem;
+    }
+}
+
 @media (max-width: 600px) {
+    .main-content {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .title-container h1 {
+        font-size: 1.6rem;
+    }
+    
+    .subtitle {
+        font-size: 0.85rem;
+    }
+    
+    .card {
+        padding: 16px;
+    }
+    
     .month-header {
         grid-template-columns: 1fr;
         gap: 6px;
     }
+    
     .backup-actions {
         grid-template-columns: 1fr;
     }
+    
     .form-row {
         grid-template-columns: 1fr;
     }

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="Planificador y Calculadora Financiera Personal. Proyecta tu saldo a cualquier fecha y calcula tu ahorro semanal.">
     <title>Planificador Financiero Personal</title>
     <!-- Google Fonts: Inter -->
@@ -24,10 +24,13 @@
 <body>
     <div class="app-container">
         <!-- BARRA LATERAL (CONFIGURACIÓN BÁSICA) -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo-icon">💰</div>
-                <h2>Configuración</h2>
+        <aside class="sidebar collapsed">
+            <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="logo-icon">💰</div>
+                    <h2>Configuración</h2>
+                </div>
+                <button id="btn-toggle-sidebar-content" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; display: none; width: auto; margin: 0; height: auto; font-weight: bold; background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">⚙️ Ajustes</button>
             </div>
             
             <div class="sidebar-section">

@@ -75,7 +75,8 @@ const dom = {
     gdClientId: document.getElementById("gd-client-id"),
     btnSaveGdClient: document.getElementById("btn-save-gd-client"),
     btnSyncGd: document.getElementById("btn-sync-gd"),
-    gdSyncStatus: document.getElementById("gd-sync-status")
+    gdSyncStatus: document.getElementById("gd-sync-status"),
+    btnToggleSidebarContent: document.getElementById("btn-toggle-sidebar-content")
 };
 
 // MAPA DE MONEDAS
@@ -333,6 +334,16 @@ function registerEventListeners() {
     dom.btnSyncGd.addEventListener("click", function() {
         syncWithGoogleDrive();
     });
+
+    // 17. Alternar visibilidad de la barra lateral en móviles
+    if (dom.btnToggleSidebarContent) {
+        dom.btnToggleSidebarContent.addEventListener("click", function() {
+            const sidebar = document.querySelector(".sidebar");
+            sidebar.classList.toggle("collapsed");
+            const isCollapsed = sidebar.classList.contains("collapsed");
+            this.textContent = isCollapsed ? "⚙️ Ajustes" : "❌ Cerrar";
+        });
+    }
 }
 
 // SINCRONIZAR ESTADO DE CHECKBOXES DE RESERVA
