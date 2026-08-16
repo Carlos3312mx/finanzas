@@ -118,8 +118,7 @@ const FinanceEngine = {
         return occurrences;
     },
 
-    // Ejecuta la proyección del saldo financiero
-    runProjection: function(initialBalance, transactions, startStr, endStr, simulations = {}) {
+    runProjection: function(initialBalance, transactions, startStr, endStr, simulations = {}, paidOccurrences = {}) {
         const dates = this.generateDateRange(startStr, endStr);
         
         // Crear mapa para acumular flujos por día
@@ -138,8 +137,15 @@ const FinanceEngine = {
             const amount = parseFloat(tx.amount);
             const type = tx.type;
             const name = tx.name;
+            const txId = tx.id;
 
             occurrences.forEach(dateStr => {
+                const occurrenceKey = `${txId}_${dateStr}`;
+                if (paidOccurrences[occurrenceKey]) {
+                    // Si ya se pagó, no afecta a las proyecciones a futuro
+                    return;
+                }
+
                 if (timeline[dateStr]) {
                     if (type === "income") {
                         timeline[dateStr].income += amount;

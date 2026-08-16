@@ -88,13 +88,19 @@ const StorageManager = {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (!stored) {
             this.saveData(DEFAULT_DATA);
-            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+            const data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            data.paid_occurrences = data.paid_occurrences || {};
+            return data;
         }
         try {
-            return JSON.parse(stored);
+            const data = JSON.parse(stored);
+            data.paid_occurrences = data.paid_occurrences || {};
+            return data;
         } catch (e) {
             console.error("Error parsing storage data, using defaults:", e);
-            return JSON.parse(JSON.stringify(DEFAULT_DATA));
+            const data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+            data.paid_occurrences = data.paid_occurrences || {};
+            return data;
         }
     },
 

@@ -396,7 +396,9 @@ function getGroupedMonthlyProjections() {
         appData.initial_balance,
         appData.transactions,
         startStr,
-        endStr
+        endStr,
+        {},
+        appData.paid_occurrences || {}
     );
     
     // Agrupar
@@ -424,19 +426,9 @@ function getGroupedMonthlyProjections() {
             monthsOrder.push(yearMonth);
         }
         
-        // Sumar flujos
+        // Sumar flujos (la proyección ya tiene filtrados los pagos realizados en dailyPoints)
         months[yearMonth].incomeSum += pt.income;
         months[yearMonth].expenseSum += pt.expense;
-        
-        // Almacenar detalles si hubo movimientos
-        if (pt.income > 0 || pt.expense > 0) {
-            months[yearMonth].events.push({
-                date: pt.date,
-                income: pt.income,
-                expense: pt.expense,
-                details: pt.details
-            });
-        }
     });
     
     // Rellenar saldos iniciales y finales de cada mes
@@ -450,6 +442,33 @@ function getGroupedMonthlyProjections() {
         m.endingBalance = m.startingBalance + netFlow;
         
         prevEndingBalance = m.endingBalance;
+    });
+    
+    // Generar todas las ocurrencias individuales en el rango de 18 meses para mostrarlas en el desglose
+    appData.transactions.forEach(tx => {
+        const occurrences = FinanceEngine.getOccurrences(tx, startStr, endStr);
+        occurrences.forEach(dateStr => {
+            const yearMonth = dateStr.substring(0, 7);
+            if (months[yearMonth]) {
+                const key = `${tx.id}_${dateStr}`;
+                const isPaid = !!(appData.paid_occurrences && appData.paid_occurrences[key]);
+                
+                months[yearMonth].events.push({
+                    txId: tx.id,
+                    name: tx.name,
+                    date: dateStr,
+                    amount: parseFloat(tx.amount),
+                    type: tx.type,
+                    category: tx.category,
+                    isPaid: isPaid
+                });
+            }
+        });
+    });
+    
+    // Ordenar los eventos de cada mes por fecha
+    monthsOrder.forEach(ym => {
+        months[ym].events.sort((a, b) => a.date.localeCompare(b.date));
     });
     
     return monthsOrder.map(ym => months[ym]);
@@ -475,7 +494,9 @@ function updateCalculatorView() {
         appData.initial_balance,
         appData.transactions,
         todayStr,
-        targetDateVal
+        targetDateVal,
+        {},
+        appData.paid_occurrences || {}
     );
     
     const lastPoint = proj[proj.length - 1];
@@ -621,6 +642,7 @@ function updateMonthlyGridView() {
                 <table class="data-table">
                     <thead>
                         <tr>
+                            <th>Pagado</th>
                             <th>Fecha</th>
                             <th>Flujo</th>
                             <th>Descripción</th>
@@ -631,28 +653,55 @@ function updateMonthlyGridView() {
                             const dateObj = new Date(ev.date + "T00:00:00");
                             const dayFormatted = dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'long' });
                             
-                            const flowStr = ev.income > 0 
-                                ? `<span style="color: var(--color-success); font-weight: 600;">+${formatCurrency(ev.income)}</span>` 
-                                : `<span style="color: var(--color-danger); font-weight: 600;">-${formatCurrency(ev.expense)}</span>`;
+                            const flowStr = ev.type === "income" 
+                                ? `<span style="color: var(--color-success); font-weight: 600;">+${formatCurrency(ev.amount)}</span>` 
+                                : `<span style="color: var(--color-danger); font-weight: 600;">-${formatCurrency(ev.amount)}</span>`;
+                            
+                            const isChecked = ev.isPaid ? "checked" : "";
+                            const paidClass = ev.isPaid ? "occurrence-paid" : "";
                             
                             return `
-                                <tr>
-                                    <td style="width: 140px; font-weight: 500;">${dayFormatted}</td>
-                                    <td style="width: 150px;">${flowStr}</td>
-                                    <td style="color: var(--text-muted); font-size: 0.8rem;">${ev.details}</td>
+                                <tr class="${paidClass}">
+                                    <td style="width: 70px; text-align: center;">
+                                        <input type="checkbox" class="occurrence-chk" data-key="${ev.txId}_${ev.date}" ${isChecked} style="width: 16px; height: 16px; cursor: pointer;">
+                                    </td>
+                                    <td style="width: 140px; font-weight: 500; text-decoration: ${ev.isPaid ? 'line-through' : 'none'}; opacity: ${ev.isPaid ? 0.6 : 1};">${dayFormatted}</td>
+                                    <td style="width: 150px; text-decoration: ${ev.isPaid ? 'line-through' : 'none'}; opacity: ${ev.isPaid ? 0.6 : 1};">${flowStr}</td>
+                                    <td style="color: var(--text-muted); font-size: 0.8rem; text-decoration: ${ev.isPaid ? 'line-through' : 'none'}; opacity: ${ev.isPaid ? 0.6 : 1};">
+                                        <strong>${ev.name}</strong> <span style="font-size: 0.7rem; color: var(--text-muted);">(${ev.category})</span>
+                                    </td>
                                 </tr>
                             `;
                         }).join("")}
-                        ${m.events.length === 0 ? '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Sin movimientos programados en este mes.</td></tr>' : ''}
+                        ${m.events.length === 0 ? '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Sin movimientos programados en este mes.</td></tr>' : ''}
                     </tbody>
                 </table>
             </div>
         `;
         
         // Evento para colapsar/expandir acordeón
-        item.querySelector(".month-header").addEventListener("click", function() {
+        item.querySelector(".month-header").addEventListener("click", function(e) {
+            // Evitar colapsar si se hace clic en elementos interactivos si los hubiera
             const parent = this.parentElement;
             parent.classList.toggle("expanded");
+        });
+
+        // Eventos para checkboxes
+        item.querySelectorAll(".occurrence-chk").forEach(chk => {
+            chk.addEventListener("change", function(e) {
+                const key = this.dataset.key;
+                if (!appData.paid_occurrences) {
+                    appData.paid_occurrences = {};
+                }
+                if (this.checked) {
+                    appData.paid_occurrences[key] = true;
+                } else {
+                    delete appData.paid_occurrences[key];
+                }
+                
+                StorageManager.saveData(appData);
+                updateUI();
+            });
         });
         
         dom.monthlyAccordionWrapper.appendChild(item);
@@ -1032,13 +1081,13 @@ async function askAiAsesor() {
         end365.setDate(today.getDate() + 365);
         const end365Str = FinanceEngine.formatDateLocal(end365);
         
-        const proj30 = FinanceEngine.runProjection(appData.initial_balance, appData.transactions, todayStr, end30Str);
+        const proj30 = FinanceEngine.runProjection(appData.initial_balance, appData.transactions, todayStr, end30Str, {}, appData.paid_occurrences || {});
         const bal30 = proj30[proj30.length - 1].balance;
         
-        const proj90 = FinanceEngine.runProjection(appData.initial_balance, appData.transactions, todayStr, end90Str);
+        const proj90 = FinanceEngine.runProjection(appData.initial_balance, appData.transactions, todayStr, end90Str, {}, appData.paid_occurrences || {});
         const bal90 = proj90[proj90.length - 1].balance;
         
-        const proj365 = FinanceEngine.runProjection(appData.initial_balance, appData.transactions, todayStr, end365Str);
+        const proj365 = FinanceEngine.runProjection(appData.initial_balance, appData.transactions, todayStr, end365Str, {}, appData.paid_occurrences || {});
         const bal365 = proj365[proj365.length - 1].balance;
         
         // 3. Crear Prompt de Contexto

@@ -1007,3 +1007,14 @@ select:focus {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
+
+/* Transacciones marcadas como pagadas en la vista mensual */
+.occurrence-paid {
+    opacity: 0.45;
+    background-color: rgba(255, 255, 255, 0.005);
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.occurrence-paid td {
+    border-bottom-color: rgba(255, 255, 255, 0.02) !important;
+}
