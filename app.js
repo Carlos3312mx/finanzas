@@ -1403,5 +1403,16 @@ function updateUI() {
     updateTransactionsListView();
 }
 
+// BLOQUEAR MENÚ CONTEXTUAL Y ATAJOS DE NAVEGADOR PARA APARIENCIA NATIVA
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && (e.key === '=' || e.key === '-' || e.key === '0' || e.key === '+' || e.key === 'r' || e.key === 'R' || e.key === 's' || e.key === 'S')) {
+        e.preventDefault();
+    }
+    if (e.key === 'F5' || e.key === 'F12') {
+        e.preventDefault();
+    }
+});
+
 // INICIAR AL CARGAR
 window.addEventListener("DOMContentLoaded", init);

@@ -1,0 +1,12 @@
+{
+  "name": "financial-projection-dashboard",
+  "version": "1.0.0",
+  "description": "Calculadora y Planificador de Ahorro con proyecciones y Asesor de IA",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}

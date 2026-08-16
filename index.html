@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="Planificador y Calculadora Financiera Personal. Proyecta tu saldo a cualquier fecha y calcula tu ahorro semanal.">
     <title>Planificador Financiero Personal</title>
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -27,7 +27,9 @@
         <aside class="sidebar collapsed">
             <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="logo-icon">💰</div>
+                    <div class="logo-icon" style="color: var(--color-primary-hover); display: flex; align-items: center;">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
                     <h2>Configuración</h2>
                 </div>
                 <button id="btn-toggle-sidebar-content" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; display: none; width: auto; margin: 0; height: auto; font-weight: bold; background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">⚙️ Ajustes</button>
@@ -92,13 +94,34 @@
 
             <!-- TABS DE NAVEGACION -->
             <nav class="tab-nav">
-                <button class="tab-btn active" data-tab="tab-calculator">🔍 ¿Cuánto tendré en X fecha?</button>
-                <button class="tab-btn" data-tab="tab-weekly-saving">📅 Plan de Ahorro Semanal</button>
-                <button class="tab-btn" data-tab="tab-monthly-grid">🗓️ Vista por Meses</button>
-                <button class="tab-btn" data-tab="tab-analytics">📊 Distribución de Gastos</button>
-                <button class="tab-btn" data-tab="tab-transactions">💸 Mis Transacciones</button>
-                <button class="tab-btn" data-tab="tab-ai-advisor">🤖 Asistente IA</button>
-                <button class="tab-btn" data-tab="tab-backup">📥 Respaldo</button>
+                <button class="tab-btn active" data-tab="tab-calculator">
+                    <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <span>Calculadora</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-weekly-saving">
+                    <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+                    <span>Reserva Semanal</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-monthly-grid">
+                    <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                    <span>Calendario Mensual</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-analytics">
+                    <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                    <span>Distribución</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-transactions">
+                    <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <span>Transacciones</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-ai-advisor">
+                    <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5Z"/></svg>
+                    <span>Asesor IA</span>
+                </button>
+                <button class="tab-btn" data-tab="tab-backup">
+                    <svg class="tab-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Sincro / Respaldo</span>
+                </button>
             </nav>
 
             <!-- CONTENIDO DE TABS -->
