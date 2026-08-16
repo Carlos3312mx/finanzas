@@ -23,74 +23,41 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- BARRA LATERAL (CONFIGURACIÓN BÁSICA) -->
-        <aside class="sidebar collapsed">
-            <div class="sidebar-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="logo-icon" style="color: var(--color-primary-hover); display: flex; align-items: center;">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    </div>
-                    <h2>Configuración</h2>
+        <!-- CABECERA PRINCIPAL TIPO APP -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="logo-icon" style="color: var(--color-primary-hover); display: flex; align-items: center;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
-                <button id="btn-toggle-sidebar-content" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem; display: none; width: auto; margin: 0; height: auto; font-weight: bold; background-color: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">⚙️ Ajustes</button>
+                <h2 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: var(--text-header);">Finanzas</h2>
             </div>
             
-            <div class="sidebar-section">
-                <h3>Saldo Inicial</h3>
-                <div class="input-group">
-                    <label for="initial-balance-input">Mi Saldo Actual</label>
-                    <div class="currency-input-wrapper">
-                        <span class="currency-prefix" id="curr-symbol-prefix">$</span>
-                        <input type="number" id="initial-balance-input" value="5000" min="0" step="100">
-                    </div>
+            <div class="header-kpis-container">
+                <div class="header-kpi-item">
+                    <span class="kpi-label">Saldo Actual</span>
+                    <span class="kpi-val" id="sb-fixed-expenses">$0.00</span>
                 </div>
-                
-                <div class="input-group">
-                    <label for="currency-select">Moneda</label>
-                    <select id="currency-select">
-                        <option value="USD" selected>USD ($)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="MXN">MXN ($)</option>
-                        <option value="CLP">CLP ($)</option>
-                        <option value="ARS">ARS ($)</option>
-                        <option value="COP">COP ($)</option>
-                        <option value="PEN">PEN (S/)</option>
-                        <option value="BRL">BRL (R$)</option>
-                    </select>
-                </div>
-
-                <div class="input-group" style="margin-top: 4px;">
-                    <label>Aspecto</label>
-                    <button class="btn btn-secondary" id="btn-toggle-theme" style="width: 100%; justify-content: center;">
-                        ☀️ Modo Claro
-                    </button>
+                <div class="header-kpi-item">
+                    <span class="kpi-label">Ahorro Semanal</span>
+                    <span class="kpi-val highlight" id="sb-weekly-saving">$0.00</span>
                 </div>
             </div>
 
-            <div class="sidebar-section">
-                <h3>Resumen Rápido</h3>
-                <div class="sidebar-kpi-box">
-                    <div class="sidebar-kpi-label">Gastos Fijos Mensuales</div>
-                    <div class="sidebar-kpi-val" id="sb-fixed-expenses">$0.00</div>
+            <div class="header-controls">
+                <div class="date-badge" style="margin: 0; font-size: 0.8rem; padding: 6px 12px;">
+                    Hoy: <span id="current-date-span" style="color: var(--color-primary-hover); font-weight: 600;">01/01/2026</span>
                 </div>
-                <div class="sidebar-kpi-box">
-                    <div class="sidebar-kpi-label">Ahorro Semanal Requerido</div>
-                    <div class="sidebar-kpi-val highlight" id="sb-weekly-saving">$0.00</div>
-                </div>
+                <button class="icon-btn-style" id="btn-toggle-theme" title="Alternar Modo Oscuro/Claro">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                </button>
+                <button class="icon-btn-style" id="btn-open-settings" title="Configuración">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                </button>
             </div>
-        </aside>
+        </header>
 
         <!-- CONTENIDO PRINCIPAL -->
         <main class="main-content">
-            <header class="main-header">
-                <div class="title-container">
-                    <h1>Planificador Financiero Personal</h1>
-                    <p class="subtitle">Calcula cuánto dinero tendrás en una fecha y organiza tu ahorro semanal.</p>
-                </div>
-                <div class="date-badge">
-                    Hoy: <span id="current-date-span">01/01/2026</span>
-                </div>
-            </header>
 
             <!-- TABS DE NAVEGACION -->
             <nav class="tab-nav">
@@ -530,6 +497,41 @@
     <script src="engine.js"></script>
     <script src="app.js"></script>
     <!-- Registro de Service Worker para PWA -->
+    <!-- MODAL DE CONFIGURACIÓN DE CRISTAL (SETTINGS) -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Ajustes Generales</h3>
+                <button class="icon-btn-style close-modal-btn" id="btn-close-settings" title="Cerrar Ajustes">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group" style="margin-bottom: 20px;">
+                    <label for="initial-balance-input">Saldo Inicial / Efectivo Disponible</label>
+                    <div class="currency-input-wrapper">
+                        <span class="currency-prefix" id="curr-symbol-prefix">$</span>
+                        <input type="number" id="initial-balance-input" value="5000" min="0" step="100">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="currency-select">Moneda Activa</label>
+                    <select id="currency-select">
+                        <option value="USD" selected>USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="MXN">MXN ($)</option>
+                        <option value="CLP">CLP ($)</option>
+                        <option value="ARS">ARS ($)</option>
+                        <option value="COP">COP ($)</option>
+                        <option value="PEN">PEN (S/)</option>
+                        <option value="BRL">BRL (R$)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {

@@ -8,11 +8,14 @@ let googleAccessToken = null;
 
 // ELEMENTOS DEL DOM
 const dom = {
-    // Sidebar Configuración
+    // Configuración & Modal
     initialBalanceInput: document.getElementById("initial-balance-input"),
     currencySelect: document.getElementById("currency-select"),
     sbFixedExpenses: document.getElementById("sb-fixed-expenses"),
     sbWeeklySaving: document.getElementById("sb-weekly-saving"),
+    btnOpenSettings: document.getElementById("btn-open-settings"),
+    btnCloseSettings: document.getElementById("btn-close-settings"),
+    settingsModal: document.getElementById("settings-modal"),
     
     // Header
     currentDateSpan: document.getElementById("current-date-span"),
@@ -131,10 +134,8 @@ function init() {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "light") {
         document.body.classList.add("light-theme");
-        dom.btnToggleTheme.textContent = "🌙 Modo Oscuro";
     } else {
         document.body.classList.remove("light-theme");
-        dom.btnToggleTheme.textContent = "☀️ Modo Claro";
     }
 
     // Inicializar Clave API de OpenAI
@@ -296,7 +297,6 @@ function registerEventListeners() {
         document.body.classList.toggle("light-theme");
         const isLight = document.body.classList.contains("light-theme");
         localStorage.setItem("theme", isLight ? "light" : "dark");
-        dom.btnToggleTheme.textContent = isLight ? "🌙 Modo Oscuro" : "☀️ Modo Claro";
     });
 
     // 12. Guardar OpenAI Clave API
@@ -335,15 +335,20 @@ function registerEventListeners() {
         syncWithGoogleDrive();
     });
 
-    // 17. Alternar visibilidad de la barra lateral en móviles
-    if (dom.btnToggleSidebarContent) {
-        dom.btnToggleSidebarContent.addEventListener("click", function() {
-            const sidebar = document.querySelector(".sidebar");
-            sidebar.classList.toggle("collapsed");
-            const isCollapsed = sidebar.classList.contains("collapsed");
-            this.textContent = isCollapsed ? "⚙️ Ajustes" : "❌ Cerrar";
-        });
-    }
+    // 17. Abrir y Cerrar Modal de Ajustes
+    dom.btnOpenSettings.addEventListener("click", function() {
+        dom.settingsModal.classList.add("active");
+    });
+
+    dom.btnCloseSettings.addEventListener("click", function() {
+        dom.settingsModal.classList.remove("active");
+    });
+
+    dom.settingsModal.addEventListener("click", function(e) {
+        if (e.target === this) {
+            this.classList.remove("active");
+        }
+    });
 }
 
 // SINCRONIZAR ESTADO DE CHECKBOXES DE RESERVA
