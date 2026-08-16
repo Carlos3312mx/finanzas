@@ -162,6 +162,9 @@ function init() {
         setTimeout(initGoogleAuth, 1000);
     }
 
+    // Rellenar las categorías dinámicamente en los dropdowns
+    populateCategoryDropdowns();
+
     // Eventos
     registerEventListeners();
     
@@ -187,6 +190,39 @@ function registerEventListeners() {
         appData.currency = this.value;
         document.getElementById("curr-symbol-prefix").textContent = getCurrencyInfo().symbol;
         updateUI();
+    });
+
+    // 2b. Selección de Categoría (Añadir Nueva) en Creación y Edición
+    dom.txCategory.addEventListener("change", function() {
+        if (this.value === "__add_new__") {
+            const newCat = prompt("Introduce el nombre de la nueva categoría:");
+            if (newCat && newCat.trim()) {
+                const formattedCat = newCat.trim().charAt(0).toUpperCase() + newCat.trim().slice(1);
+                if (!appData.categories.includes(formattedCat)) {
+                    appData.categories.push(formattedCat);
+                    StorageManager.saveData(appData);
+                }
+                populateCategoryDropdowns(formattedCat, dom.editTxCategory.value);
+            } else {
+                this.value = "Otros";
+            }
+        }
+    });
+
+    dom.editTxCategory.addEventListener("change", function() {
+        if (this.value === "__add_new__") {
+            const newCat = prompt("Introduce el nombre de la nueva categoría:");
+            if (newCat && newCat.trim()) {
+                const formattedCat = newCat.trim().charAt(0).toUpperCase() + newCat.trim().slice(1);
+                if (!appData.categories.includes(formattedCat)) {
+                    appData.categories.push(formattedCat);
+                    StorageManager.saveData(appData);
+                }
+                populateCategoryDropdowns(dom.txCategory.value, formattedCat);
+            } else {
+                this.value = "Otros";
+            }
+        }
     });
 
     // 3. Pestañas
@@ -256,6 +292,7 @@ function registerEventListeners() {
         appData = StorageManager.loadData();
         dom.transactionForm.reset();
         dom.txStartDate.value = new Date().toISOString().split('T')[0];
+        populateCategoryDropdowns();
         
         updateUI();
         alert(`Transacción "${name}" agregada con éxito.`);
@@ -836,11 +873,62 @@ function openEditTxModal(tx) {
     dom.editTxAmount.value = tx.amount;
     dom.editTxType.value = tx.type;
     dom.editTxFrequency.value = tx.frequency;
-    dom.editTxCategory.value = tx.category;
+    
+    // Rellenar categorías asegurando que la actual esté seleccionada
+    populateCategoryDropdowns(null, tx.category);
+    
     dom.editTxStartDate.value = tx.start_date;
     dom.editTxEndDate.value = tx.end_date || "";
     
     dom.editTxModal.classList.add("active");
+}
+
+function populateCategoryDropdowns(selectedTxCategory = null, selectedEditCategory = null) {
+    const categories = appData.categories || ["Trabajo", "Vivienda", "Servicios", "Comida", "Transporte", "Salud", "Educación", "Entretenimiento", "Suscripciones", "Ahorros", "Otros"];
+    
+    // 1. Rellenar formulario de creación
+    const txSelect = dom.txCategory;
+    txSelect.innerHTML = "";
+    categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        if (selectedTxCategory === cat) {
+            opt.selected = true;
+        } else if (!selectedTxCategory && cat === "Otros") {
+            opt.selected = true;
+        }
+        txSelect.appendChild(opt);
+    });
+    
+    const optAddTx = document.createElement("option");
+    optAddTx.value = "__add_new__";
+    optAddTx.textContent = "➕ Nueva Categoría...";
+    optAddTx.style.fontWeight = "bold";
+    optAddTx.style.color = "var(--color-primary-hover)";
+    txSelect.appendChild(optAddTx);
+
+    // 2. Rellenar formulario de edición
+    const editSelect = dom.editTxCategory;
+    editSelect.innerHTML = "";
+    categories.forEach(cat => {
+        const opt = document.createElement("option");
+        opt.value = cat;
+        opt.textContent = cat;
+        if (selectedEditCategory === cat) {
+            opt.selected = true;
+        } else if (!selectedEditCategory && cat === "Otros") {
+            opt.selected = true;
+        }
+        editSelect.appendChild(opt);
+    });
+    
+    const optAddEdit = document.createElement("option");
+    optAddEdit.value = "__add_new__";
+    optAddEdit.textContent = "➕ Nueva Categoría...";
+    optAddEdit.style.fontWeight = "bold";
+    optAddEdit.style.color = "var(--color-primary-hover)";
+    editSelect.appendChild(optAddEdit);
 }
 
 // OBTENER PARÁMETROS DE SIMULACIÓN VACÍOS (DADO QUE SE QUITARON LOS SLIDERS DE LA UI)

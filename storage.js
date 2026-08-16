@@ -80,26 +80,31 @@ const DEFAULT_DATA = {
             end_date: null,
             category: "Otros"
         }
-    ]
+    ],
+    categories: ["Trabajo", "Vivienda", "Servicios", "Comida", "Transporte", "Salud", "Educación", "Entretenimiento", "Suscripciones", "Ahorros", "Otros"]
 };
 
 const StorageManager = {
     loadData: function() {
+        const defaultCategories = ["Trabajo", "Vivienda", "Servicios", "Comida", "Transporte", "Salud", "Educación", "Entretenimiento", "Suscripciones", "Ahorros", "Otros"];
         const stored = localStorage.getItem(STORAGE_KEY);
         if (!stored) {
             this.saveData(DEFAULT_DATA);
             const data = JSON.parse(JSON.stringify(DEFAULT_DATA));
             data.paid_occurrences = data.paid_occurrences || {};
+            data.categories = data.categories || defaultCategories;
             return data;
         }
         try {
             const data = JSON.parse(stored);
             data.paid_occurrences = data.paid_occurrences || {};
+            data.categories = data.categories || defaultCategories;
             return data;
         } catch (e) {
             console.error("Error parsing storage data, using defaults:", e);
             const data = JSON.parse(JSON.stringify(DEFAULT_DATA));
             data.paid_occurrences = data.paid_occurrences || {};
+            data.categories = data.categories || defaultCategories;
             return data;
         }
     },
