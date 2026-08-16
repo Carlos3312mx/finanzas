@@ -145,6 +145,23 @@ const StorageManager = {
         this.saveData(data);
     },
 
+    updateTransaction: function(id, name, amount, type, frequency, startDate, endDate = null, category = "Otros") {
+        const data = this.loadData();
+        const tx = data.transactions.find(t => t.id === id);
+        if (tx) {
+            tx.name = name;
+            tx.amount = parseFloat(amount);
+            tx.type = type;
+            tx.frequency = frequency;
+            tx.start_date = startDate;
+            tx.end_date = endDate || null;
+            tx.category = category;
+            this.saveData(data);
+            return true;
+        }
+        return false;
+    },
+
     saveGoal: function(id, name, targetAmount, targetDate) {
         const data = this.loadData();
         if (!id) {

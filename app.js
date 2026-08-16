@@ -17,6 +17,19 @@ const dom = {
     btnCloseSettings: document.getElementById("btn-close-settings"),
     settingsModal: document.getElementById("settings-modal"),
     
+    // Modal de Edición de Transacciones
+    editTxModal: document.getElementById("edit-tx-modal"),
+    editTxForm: document.getElementById("edit-tx-form"),
+    editTxId: document.getElementById("edit-tx-id"),
+    editTxName: document.getElementById("edit-tx-name"),
+    editTxAmount: document.getElementById("edit-tx-amount"),
+    editTxType: document.getElementById("edit-tx-type"),
+    editTxFrequency: document.getElementById("edit-tx-frequency"),
+    editTxCategory: document.getElementById("edit-tx-category"),
+    editTxStartDate: document.getElementById("edit-tx-start-date"),
+    editTxEndDate: document.getElementById("edit-tx-end-date"),
+    btnCloseEditTx: document.getElementById("btn-close-edit-tx"),
+    
     // Header
     currentDateSpan: document.getElementById("current-date-span"),
     
@@ -344,6 +357,44 @@ function registerEventListeners() {
     });
 
     dom.settingsModal.addEventListener("click", function(e) {
+        if (e.target === this) {
+            this.classList.remove("active");
+        }
+    });
+
+    // 18. Guardar Edición de Transacción
+    dom.editTxForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+        
+        const id = dom.editTxId.value;
+        const name = dom.editTxName.value.trim();
+        const amount = parseFloat(dom.editTxAmount.value);
+        const type = dom.editTxType.value;
+        const frequency = dom.editTxFrequency.value;
+        const category = dom.editTxCategory.value;
+        const startDate = dom.editTxStartDate.value;
+        const endDate = dom.editTxEndDate.value || null;
+
+        if (!name) return alert("Ingresa un nombre.");
+        if (isNaN(amount) || amount <= 0) return alert("Ingresa un monto válido.");
+        if (endDate && endDate <= startDate) return alert("La fecha de término debe ser posterior a la fecha de inicio.");
+
+        const success = StorageManager.updateTransaction(id, name, amount, type, frequency, startDate, endDate, category);
+        if (success) {
+            appData = StorageManager.loadData();
+            dom.editTxModal.classList.remove("active");
+            updateUI();
+        } else {
+            alert("No se pudo actualizar la transacción.");
+        }
+    });
+
+    // Cerrar Modal de Edición
+    dom.btnCloseEditTx.addEventListener("click", function() {
+        dom.editTxModal.classList.remove("active");
+    });
+
+    dom.editTxModal.addEventListener("click", function(e) {
         if (e.target === this) {
             this.classList.remove("active");
         }
@@ -730,7 +781,7 @@ function updateTransactionsListView() {
             "daily": "Diaria",
             "weekly": "Semanal",
             "bi-weekly": "Quincenal",
-            "monthly": "Mensual (Gasto Fijo)",
+            "monthly": "Mensual",
             "yearly": "Anual"
         }[tx.frequency] || tx.frequency;
 
@@ -754,20 +805,42 @@ function updateTransactionsListView() {
             <td style="font-size: 0.75rem; color: var(--text-muted);">${startStr} a<br>${endStr}</td>
             <td><span class="badge" style="background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--border-color);">${tx.category}</span></td>
             <td>
-                <button class="btn btn-danger btn-sm btn-delete-tx" data-id="${tx.id}">🗑️</button>
+                <button class="btn btn-secondary btn-sm btn-edit-tx" data-id="${tx.id}" style="margin-right: 8px; display: inline-flex; align-items: center;" title="Editar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                </button>
+                <button class="btn btn-danger btn-sm btn-delete-tx" data-id="${tx.id}" style="display: inline-flex; align-items: center;" title="Eliminar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
             </td>
         `;
         
         tr.querySelector(".btn-delete-tx").addEventListener("click", function() {
             if (confirm(`¿Eliminar transacción "${tx.name}"?`)) {
-                StorageManager.deleteTransaction(this.dataset.id);
+                StorageManager.deleteTransaction(tx.id);
                 appData = StorageManager.loadData();
                 updateUI();
             }
         });
 
+        tr.querySelector(".btn-edit-tx").addEventListener("click", function() {
+            openEditTxModal(tx);
+        });
+
         dom.txListTableBody.appendChild(tr);
     });
+}
+
+function openEditTxModal(tx) {
+    dom.editTxId.value = tx.id;
+    dom.editTxName.value = tx.name;
+    dom.editTxAmount.value = tx.amount;
+    dom.editTxType.value = tx.type;
+    dom.editTxFrequency.value = tx.frequency;
+    dom.editTxCategory.value = tx.category;
+    dom.editTxStartDate.value = tx.start_date;
+    dom.editTxEndDate.value = tx.end_date || "";
+    
+    dom.editTxModal.classList.add("active");
 }
 
 // OBTENER PARÁMETROS DE SIMULACIÓN VACÍOS (DADO QUE SE QUITARON LOS SLIDERS DE LA UI)

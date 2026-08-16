@@ -527,6 +527,83 @@
         </div>
     </div>
 
+    <!-- MODAL DE EDICIÓN DE TRANSACCIÓN -->
+    <div class="modal-overlay" id="edit-tx-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Editar Transacción</h3>
+                <button class="icon-btn-style close-modal-btn" id="btn-close-edit-tx" title="Cerrar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="edit-tx-form" style="display: flex; flex-direction: column; gap: 14px;">
+                <input type="hidden" id="edit-tx-id">
+                
+                <div class="input-group">
+                    <label for="edit-tx-name">Nombre</label>
+                    <input type="text" id="edit-tx-name" required placeholder="Nombre de la transacción">
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="edit-tx-amount">Monto</label>
+                        <input type="number" id="edit-tx-amount" min="0.01" step="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label for="edit-tx-type">Tipo</label>
+                        <select id="edit-tx-type">
+                            <option value="income">🟢 Ingreso</option>
+                            <option value="expense">🔴 Gasto (Egreso)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="edit-tx-frequency">Frecuencia</label>
+                        <select id="edit-tx-frequency">
+                            <option value="one-time">Única (Un solo día)</option>
+                            <option value="daily">Diaria</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="bi-weekly">Quincenal</option>
+                            <option value="monthly">Mensual (Gasto Fijo)</option>
+                            <option value="yearly">Anual</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label for="edit-tx-category">Categoría</label>
+                        <select id="edit-tx-category">
+                            <option value="Trabajo">Trabajo</option>
+                            <option value="Vivienda">Vivienda</option>
+                            <option value="Servicios">Servicios</option>
+                            <option value="Comida">Comida</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Salud">Salud</option>
+                            <option value="Educación">Educación</option>
+                            <option value="Entretenimiento">Entretenimiento</option>
+                            <option value="Suscripciones">Suscripciones</option>
+                            <option value="Ahorros">Ahorros</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-bottom: 8px;">
+                    <div class="input-group" style="flex: 1;">
+                        <label for="edit-tx-start-date">Fecha Inicio</label>
+                        <input type="date" id="edit-tx-start-date" required>
+                    </div>
+                    <div class="input-group" style="flex: 1;">
+                        <label for="edit-tx-end-date">Fecha Fin (Opcional)</label>
+                        <input type="date" id="edit-tx-end-date">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="justify-content: center; width: 100%;">💾 Guardar Cambios</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="storage.js"></script>
     <script src="engine.js"></script>
