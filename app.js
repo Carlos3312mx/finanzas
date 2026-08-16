@@ -78,8 +78,7 @@ const dom = {
     gdClientId: document.getElementById("gd-client-id"),
     btnSaveGdClient: document.getElementById("btn-save-gd-client"),
     btnSyncGd: document.getElementById("btn-sync-gd"),
-    gdSyncStatus: document.getElementById("gd-sync-status"),
-    btnToggleSidebarContent: document.getElementById("btn-toggle-sidebar-content")
+    gdSyncStatus: document.getElementById("gd-sync-status")
 };
 
 // MAPA DE MONEDAS
